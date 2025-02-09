@@ -9,14 +9,18 @@ import { BsBookmark } from "react-icons/bs";
 import { BiUser } from "react-icons/bi";
 import { FeedComponent } from "./Components/FeedComponent";
 import { CredentialResponse, GoogleLogin } from "@react-oauth/google";
-import { useCallback } from "react";
+import { use, useCallback } from "react";
 import toast from "react-hot-toast";
 import { graphqlclient } from "@/clients/api";
 import { verifyUserGoogleToken } from "@/graphql/query/user";
+import { useCurrentUser } from "@/hooks/user";
 
 
 
 export default function Home() {
+  const {user}=useCurrentUser()
+  console.log(user);
+   
   const handleLoginWithGoogle=useCallback(async(cred:CredentialResponse)=>{
     const googleToken=cred.credential
     if(!googleToken)
@@ -39,7 +43,7 @@ export default function Home() {
   },{title:'Bookmarks',icon:<BsBookmark/>},{title:"Profile",icon:<BiUser/>}]
   return (
    <div className="grid grid-cols-12 h-screen max-w-screen px-52 ">
-    <div className="col-span-3 px-4 sticky top-0 left-0 h-screen">
+    <div className="col-span-3 px-4 relative h-screen">
       <div className="flex justify-start hover:bg-slate-900 w-fit rounded-full p-3 cursor-pointer">
       <FaXTwitter size={30}/>
 
@@ -60,6 +64,19 @@ export default function Home() {
       </ul>
       <div className="pr-5">
       <button className="bg-blue-500 rounded-full p-4 w-full ">Tweet</button>
+      <div className="absolute bottom-5">
+      {user && user.profileImageUrl &&<div className="flex gap-2 items-center bg-slate-800 rounded-full px-3 py-2 w-fit">
+        <Image className="rounded-full" src={user?.profileImageUrl} width={50} height={50} alt="alt-image"/>
+        <div>
+        <h3 >{user.firstName} {user.lastName}</h3>
+       
+
+        </div>
+        
+        </div>}
+        
+
+      </div>
 
       </div>
       
@@ -79,14 +96,14 @@ export default function Home() {
       
       
     </div>
-    <div className="col-span-3 p-5 ">
+   {!user && <div className="col-span-3 p-5 ">
       <div className="p-5 bg-slate-700 rounded-lg w-fit">
         <h1 className="my-2 text-2xl">New to Twitter ?</h1>
       <GoogleLogin onSuccess={handleLoginWithGoogle}/>
         
       </div>
       
-    </div>
+    </div>}
     
     </div>
   );
