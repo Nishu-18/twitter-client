@@ -6,20 +6,37 @@ import { IoSearch } from "react-icons/io5";
 import { IoNotificationsOutline } from "react-icons/io5";
 import { BsEnvelope } from "react-icons/bs";
 import { BsBookmark } from "react-icons/bs";
-import { BiUser } from "react-icons/bi";
+import { BiImageAlt, BiUser } from "react-icons/bi";
 import { FeedComponent } from "./Components/FeedComponent";
 import { CredentialResponse, GoogleLogin } from "@react-oauth/google";
-import { use, useCallback } from "react";
+import { use, useCallback, useState } from "react";
 import toast from "react-hot-toast";
 import { graphqlclient } from "@/clients/api";
 import { verifyUserGoogleToken } from "@/graphql/query/user";
 import { useCurrentUser } from "@/hooks/user";
+import { useCreateTweet, useGetAllTweets } from "@/hooks/tweet";
+import { Tweet } from "@/gql/graphql";
 
 
 
 export default function Home() {
+  const [content,setContent]=useState('')
   const {user}=useCurrentUser()
-  console.log(user);
+  const {tweets=[]}=useGetAllTweets()
+  const {mutate}=useCreateTweet()
+  const handleSelectImage=useCallback(()=>{
+     const input=document.createElement('input')
+     input.setAttribute('type','file')
+     input.setAttribute('accept','image/*')
+     input.click();
+  },[])
+
+  const handleCreateTweet=useCallback(()=>{
+    mutate({
+      content
+    });
+
+  },[content,mutate])
    
   const handleLoginWithGoogle=useCallback(async(cred:CredentialResponse)=>{
     const googleToken=cred.credential
@@ -83,14 +100,26 @@ export default function Home() {
    
     </div>
     <div className="col-span-5 border-r-[1px] border-l-[1px] border-gray-800 h-screen overflow-y-auto scrollbar-hide">
-      <FeedComponent/>
-      <FeedComponent/>
-      <FeedComponent/>
-      <FeedComponent/>
-      <FeedComponent/>
-      <FeedComponent/>
-      <FeedComponent/>
-      <FeedComponent/>
+    <div className='grid grid-cols-12 gap-2 p-4 border-b-2 border-b-slate-900 hover:bg-slate-900 transition-all cursor-pointer'>
+       <div className='col-span-1'>
+{user&&user.profileImageUrl && <Image className="rounded-full" src={user?.profileImageUrl} width={50} height={50} alt="alt-image"/>}
+       
+                 
+              </div>
+              <div className="col-span-11">
+                <textarea onChange={(e)=>setContent(e.target.value)} name="" id="" rows={3} className="w-full bg-transparent text-xl px-2 border-b border-slate-700" placeholder="What's Happening?"></textarea>
+                <div className="flex justify-between items-center">
+              <BiImageAlt onClick={handleSelectImage} className="text-xl" />
+              <button onClick={handleCreateTweet} className="bg-blue-500 rounded-full px-4 py-1  text-sm">Tweet</button>
+              </div>
+              </div>
+              
+    </div>
+    {tweets?.map(tweet=> 
+      tweet? <FeedComponent key={tweet?.id} data={tweet as Tweet} />:null)}
+
+     
+    
       
 
       
