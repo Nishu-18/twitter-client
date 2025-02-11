@@ -1,105 +1,106 @@
 "use client"
-import Image from "next/image";
-import { FaXTwitter } from "react-icons/fa6";
-import { MdHomeFilled } from "react-icons/md";
-import { IoSearch } from "react-icons/io5";
-import { IoNotificationsOutline } from "react-icons/io5";
-import { BsEnvelope } from "react-icons/bs";
-import { BsBookmark } from "react-icons/bs";
-import { BiImageAlt, BiUser } from "react-icons/bi";
-import { FeedComponent } from "./Components/FeedComponent";
-import { CredentialResponse, GoogleLogin } from "@react-oauth/google";
-import { use, useCallback, useState } from "react";
-import toast from "react-hot-toast";
-import { graphqlclient } from "@/clients/api";
-import { verifyUserGoogleToken } from "@/graphql/query/user";
-import { useCurrentUser } from "@/hooks/user";
-import { useCreateTweet, useGetAllTweets } from "@/hooks/tweet";
+
 import { Tweet } from "@/gql/graphql";
+import { useCreateTweet, useGetAllTweets } from "@/hooks/tweet";
+import { useCurrentUser } from "@/hooks/user";
+import Image from "next/image";
+import { useCallback, useEffect, useState } from "react";
+import { BiImageAlt } from "react-icons/bi";
+import { FeedComponent } from "./Components/FeedComponent";
+import { SideBarLayout } from "./Components/SideBarLayout";
+import { graphqlclient } from "@/clients/api";
+import { getSignedUrlForTweetQuery } from "@/graphql/query/tweet";
+import axios from "axios";
+import toast from "react-hot-toast";
+
+interface HomeProps{
+  tweets?:Tweet[]
+}
 
 
-
-export default function Home() {
-  const [content,setContent]=useState('')
+export default function Home(props:HomeProps) {
+  const {tweets=props.tweets as Tweet[]}=useGetAllTweets()
+  
   const {user}=useCurrentUser()
-  const {tweets=[]}=useGetAllTweets()
-  const {mutate}=useCreateTweet()
-  const handleSelectImage=useCallback(()=>{
-     const input=document.createElement('input')
-     input.setAttribute('type','file')
-     input.setAttribute('accept','image/*')
-     input.click();
+
+  const [content,setContent]=useState('')
+  const [imageurl,setImageUrl]=useState('')
+  const {mutateAsync}=useCreateTweet()
+  const handleFileChange=useCallback((input:HTMLInputElement)=>{
+      return async(event:Event)=>{
+        event.preventDefault()
+        const file:File|null|undefined=input.files?.item(0)
+        if(!file) return;
+        const {getSignedUrlForTweet}=await graphqlclient.request(getSignedUrlForTweetQuery,{
+          imageType:file.type,
+          imageName:file.name
+        })
+        if(getSignedUrlForTweet){
+          toast.loading('Uploading...',{id:'2'})
+          await axios.put(getSignedUrlForTweet,file,
+            {headers:{
+              'Content-Type':file.type
+            }}
+          )
+          toast.success('Upload Completed',{id:'2'})
+          const url=new URL(getSignedUrlForTweet)
+          const myFilePath=`${url.origin}${url.pathname}`
+          setImageUrl(myFilePath)
+        }
+
+        
+      }
+
   },[])
 
-  const handleCreateTweet=useCallback(()=>{
-    mutate({
-      content
+  const handleSelectImage=useCallback(()=>{
+    const input=document.createElement('input')
+    input.setAttribute('type','file')
+    input.setAttribute('accept','image/*')
+    input.click();
+    const handlerFn=handleFileChange(input)
+    input.addEventListener("change",handlerFn)
+ },[handleFileChange])
+
+
+
+ const handleCreateTweet = useCallback(async () => {
+  try {
+    console.log("Calling mutateAsync with content:", content);
+    await mutateAsync({
+      content,
+      imageUrl: imageurl || undefined,
     });
 
-  },[content,mutate])
-   
-  const handleLoginWithGoogle=useCallback(async(cred:CredentialResponse)=>{
-    const googleToken=cred.credential
-    if(!googleToken)
-     return toast.error('Google token not found')
-    const {verifyGoogleToken}=await graphqlclient.request(verifyUserGoogleToken,{token:googleToken})
-    toast.success('Verified Success')
-    if(verifyGoogleToken){
-      window.localStorage.setItem('twitter_token',verifyGoogleToken)
-    }
-    
+    // Use functional updates to clear state
+    setContent((prevContent) => {
+      console.log("Clearing content:", prevContent);
+      return "";
+    });
 
-    
-  },[])
-  interface sideBarProps{
-    title:string,
-    icon:React.ReactNode
+    setImageUrl((prevImageUrl) => {
+      console.log("Clearing imageUrl:", prevImageUrl);
+      return "";
+    });
+    setTimeout(() => {
+      console.log("After timeout: content =", content);
+    }, 500);
+  } catch (error) {
+    console.error("Failed to create tweet:", error);
   }
-  const SideBarMenuItems:sideBarProps[]=[{title:'Home',icon:<MdHomeFilled/>},{title:'Explore',icon:<IoSearch/>},{title:'Notifications',icon:<IoNotificationsOutline/>},{title:'Messages',icon:<BsEnvelope/>
-    
-  },{title:'Bookmarks',icon:<BsBookmark/>},{title:"Profile",icon:<BiUser/>}]
+}, [content, mutateAsync, imageurl]);
+
+// Log state updates
+
+
+
+  
+
   return (
-   <div className="grid grid-cols-12 h-screen max-w-screen px-52 ">
-    <div className="col-span-3 px-4 relative h-screen">
-      <div className="flex justify-start hover:bg-slate-900 w-fit rounded-full p-3 cursor-pointer">
-      <FaXTwitter size={30}/>
-
-      </div>
-      <ul >
-        {SideBarMenuItems.map(item=><li className="flex items-center gap-4 hover:bg-slate-900 rounded-full w-fit p-4 cursor-pointer" key={item.title}>
-          <div className="text-3xl">
-          {item.icon}
-            
-          </div>
-          <div className="text-xl">
-          {item.title}
-
-          </div>
-         
-          
-        </li>)}
-      </ul>
-      <div className="pr-5">
-      <button className="bg-blue-500 rounded-full p-4 w-full ">Tweet</button>
-      <div className="absolute bottom-5">
-      {user && user.profileImageUrl &&<div className="flex gap-2 items-center bg-slate-800 rounded-full px-3 py-2 w-fit">
-        <Image className="rounded-full" src={user?.profileImageUrl} width={50} height={50} alt="alt-image"/>
-        <div>
-        <h3 >{user.firstName} {user.lastName}</h3>
-       
-
-        </div>
-        
-        </div>}
-        
-
-      </div>
-
-      </div>
-      
-   
-    </div>
-    <div className="col-span-5 border-r-[1px] border-l-[1px] border-gray-800 h-screen overflow-y-auto scrollbar-hide">
+  
+    <SideBarLayout>
+      <div>
+    
     <div className='grid grid-cols-12 gap-2 p-4 border-b-2 border-b-slate-900 hover:bg-slate-900 transition-all cursor-pointer'>
        <div className='col-span-1'>
 {user&&user.profileImageUrl && <Image className="rounded-full" src={user?.profileImageUrl} width={50} height={50} alt="alt-image"/>}
@@ -107,7 +108,8 @@ export default function Home() {
                  
               </div>
               <div className="col-span-11">
-                <textarea onChange={(e)=>setContent(e.target.value)} name="" id="" rows={3} className="w-full bg-transparent text-xl px-2 border-b border-slate-700" placeholder="What's Happening?"></textarea>
+                <textarea value={content} onChange={(e)=>setContent(e.target.value)} name="" id="" rows={3} className="w-full bg-transparent text-xl px-2 border-b border-slate-700" placeholder="What's Happening?"></textarea>
+                {imageurl && <Image src={imageurl} width={400} height={400} alt="image"/>}
                 <div className="flex justify-between items-center">
               <BiImageAlt onClick={handleSelectImage} className="text-xl" />
               <button onClick={handleCreateTweet} className="bg-blue-500 rounded-full px-4 py-1  text-sm">Tweet</button>
@@ -117,23 +119,13 @@ export default function Home() {
     </div>
     {tweets?.map(tweet=> 
       tweet? <FeedComponent key={tweet?.id} data={tweet as Tweet} />:null)}
-
-     
-    
-      
-
-      
-      
-    </div>
-   {!user && <div className="col-span-3 p-5 ">
-      <div className="p-5 bg-slate-700 rounded-lg w-fit">
-        <h1 className="my-2 text-2xl">New to Twitter ?</h1>
-      <GoogleLogin onSuccess={handleLoginWithGoogle}/>
-        
       </div>
-      
-    </div>}
     
-    </div>
+
+
+    </SideBarLayout>
+    
+
+   
   );
 }

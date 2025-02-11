@@ -7,10 +7,48 @@ export const verifyUserGoogleToken=graphql(`#graphql
 `)
 export const getCurrentUserQuery=graphql(`query GetCurrentUser {
   getCurrentUser {
-    id,
-    profileImageUrl,
+    id
+    profileImageUrl
     email
     lastName
     firstName
+    tweets{
+    id
+    content
+    imageUrl
+    author{
+    firstName
+    lastName
+    profileImageUrl
+
+    }
+    }
   }
 }`)
+
+export const getUserByIdQuery=graphql(`
+    
+    query GetUserById($getUserByIdId: ID!) {
+  getUserById(id: $getUserByIdId) {
+    id
+    firstName
+    lastName
+    email
+    profileImageUrl
+    tweets {
+    id
+    content
+      imageUrl
+    
+      author {
+        id
+        firstName
+        lastName
+        profileImageUrl
+      }
+    }
+  }
+}
+
+   
+    `)

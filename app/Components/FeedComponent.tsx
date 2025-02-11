@@ -5,6 +5,7 @@ import { BiRepost } from "react-icons/bi";
 import { CiHeart } from "react-icons/ci";
 import { GoUpload } from "react-icons/go";
 import { Tweet } from '@/gql/graphql';
+import Link from 'next/link';
 interface TweetCompoProps{
     data:Tweet
 }
@@ -17,8 +18,13 @@ export const FeedComponent = (props:TweetCompoProps) => {
     {data.author?.profileImageUrl && <Image src={data.author?.profileImageUrl} width={50} height={50} alt='user-image' className='rounded-full'/>}
     </div>
         <div className='col-span-11'>
-            <div className='font-semibold '>{data.author?.firstName} {data.author?.lastName}</div>
-       {data.content}
+            <Link href={`/${props.data.author?.id}`} className='font-semibold '>{data.author?.firstName} {data.author?.lastName}</Link>
+            <div>
+            {data.content}
+            {data.imageUrl && <Image className='rounded-md' src={data.imageUrl} width={400} height={400} alt='tweet-image'/>}
+
+            </div>
+       
         <div className='flex justify-evenly text-xl mt-5'>
 
 <div>
