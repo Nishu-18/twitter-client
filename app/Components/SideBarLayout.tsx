@@ -66,10 +66,11 @@ export const SideBarLayout = ({children}:{children:React.ReactNode}) => {
   return (
 
     <div>
-        <div className="grid grid-cols-12 h-screen max-w-screen sm:px-52 ">
+        <div className="grid grid-cols-12 gap-2 h-screen max-w-screen sm:px-52 ">
     <div className="col-span-2 sm:col-span-3  relative h-screen">
     <div className="flex justify-start hover:bg-slate-900 w-fit rounded-full p-3 cursor-pointer">
-      <FaXTwitter size={30}/>
+      <Link href={"/"}> <FaXTwitter  size={30}/></Link>
+     
 
       </div>
       <ul >
@@ -131,6 +132,35 @@ export const SideBarLayout = ({children}:{children:React.ReactNode}) => {
       </div>
       
     </div>}
+    <div className="px-4 py-2 sm:col-span-3 bg-slate-800 rounded-lg w-fit h-fit">
+    <h1 className="my-2 font-medium text-2xl mb-5 ">Users you may know</h1>
+    {user?.recommendedUsers?.map((el)=>(
+      <div className="flex items-center gap-3" key={el?.id}>
+        
+        {el?.profileImageUrl && <Image className="rounded-full" src={el?.profileImageUrl} width={50} height={50} alt="user-image"/>}
+        <div>
+          <div>
+          {el?.firstName} {el?.lastName}
+
+          </div>
+        
+        <Link href={`/${el?.id}`} className="bg-white text-black text-sm px-5 py-1  w-full rounded-md">View</Link>
+       
+        
+          
+        </div>
+        
+        
+        
+        
+      </div>
+      
+      
+    ))}
+   
+
+    </div>
+    
     
     </div>
 
