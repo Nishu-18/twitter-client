@@ -1,18 +1,16 @@
 "use client"
-import Image from 'next/image'
-import React, { use, useCallback, useMemo } from 'react'
-import { SideBarLayout } from '../Components/SideBarLayout'
-import { MdOutlineKeyboardBackspace } from 'react-icons/md'
-import { useCurrentUser, useGetUserById } from '@/hooks/user'
-import { FeedComponent } from '../Components/FeedComponent'
-import { Tweet } from '@/gql/graphql'
-import {  useRouter } from 'next/router'
-import { useParams, usePathname } from 'next/navigation'
-import { GetServerSideProps } from 'next'
 import { graphqlclient } from '@/clients/api'
+import { Tweet } from '@/gql/graphql'
 import { followUserMutation, UnfollowUserMutation } from '@/graphql/mutations/user'
+import { useCurrentUser, useGetUserById } from '@/hooks/user'
 import { useQueryClient } from '@tanstack/react-query'
+import Image from 'next/image'
 import Link from 'next/link'
+import { useParams } from 'next/navigation'
+import { useCallback, useMemo } from 'react'
+import { MdOutlineKeyboardBackspace } from 'react-icons/md'
+import { FeedComponent } from '../Components/FeedComponent'
+import { SideBarLayout } from '../Components/SideBarLayout'
 
 export default function page() {
   const queryClient=useQueryClient()

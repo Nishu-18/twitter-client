@@ -4,7 +4,7 @@ import { Tweet } from "@/gql/graphql";
 import { useCreateTweet, useGetAllTweets } from "@/hooks/tweet";
 import { useCurrentUser } from "@/hooks/user";
 import Image from "next/image";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { BiImageAlt } from "react-icons/bi";
 import { FeedComponent } from "./Components/FeedComponent";
 import { SideBarLayout } from "./Components/SideBarLayout";
