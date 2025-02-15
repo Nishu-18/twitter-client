@@ -13,13 +13,11 @@ import { getSignedUrlForTweetQuery } from "@/graphql/query/tweet";
 import axios from "axios";
 import toast from "react-hot-toast";
 
-interface HomeProps{
-  tweets?:Tweet[]
-}
 
 
-export default function Home(props:HomeProps) {
-  const {tweets=props.tweets as Tweet[]}=useGetAllTweets()
+
+export default function Home() {
+  const {tweets}=useGetAllTweets()
   
   const {user}=useCurrentUser()
 
