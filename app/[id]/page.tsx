@@ -12,7 +12,7 @@ import { MdOutlineKeyboardBackspace } from 'react-icons/md'
 import { FeedComponent } from '../Components/FeedComponent'
 import { SideBarLayout } from '../Components/SideBarLayout'
 
-export default function page() {
+export default function Page() {
   const queryClient=useQueryClient()
     const params = useParams<{ id: string; item: string }>()
     const {user}=useCurrentUser()

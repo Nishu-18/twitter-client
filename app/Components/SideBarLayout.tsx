@@ -6,8 +6,8 @@ import { FaXTwitter } from "react-icons/fa6"
 import { IoNotificationsOutline, IoSearch } from "react-icons/io5"
 import { MdHomeFilled } from "react-icons/md"
 import Image from "next/image";
-import { useCallback, useMemo, useState } from "react"
-import { useCreateTweet } from "@/hooks/tweet"
+import { useCallback, useMemo } from "react"
+
 import { CredentialResponse, GoogleLogin } from "@react-oauth/google"
 import toast from "react-hot-toast"
 import { graphqlclient } from "@/clients/api"
@@ -26,23 +26,12 @@ interface sideBarProps{
 
 export const SideBarLayout = ({children}:{children:React.ReactNode}) => {
     const {user}=useCurrentUser()
-      const {mutate}=useCreateTweet()
-     const [content,setContent]=useState('')
+     
 
-      const handleSelectImage=useCallback(()=>{
-          const input=document.createElement('input')
-          input.setAttribute('type','file')
-          input.setAttribute('accept','image/*')
-          input.click();
-       },[])
 
-       const handleCreateTweet=useCallback(()=>{
-        mutate({
-          content
-        });
-    
-      },[content,mutate])
+     
 
+       
 
       const handleLoginWithGoogle=useCallback(async(cred:CredentialResponse)=>{
         const googleToken=cred.credential
